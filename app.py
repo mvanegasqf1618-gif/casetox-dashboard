@@ -14,9 +14,16 @@ st.set_page_config(
 
 # ─── Autenticación ───
 # Usuarios autorizados: usuario -> contraseña
+try:
+    admin_pass = st.secrets["ADMIN_PASS"]
+    tox_pass = st.secrets["TOX_PASS"]
+except Exception:
+    admin_pass = "CaseTox2026*"
+    tox_pass = "LabTox2026*"
+
 USUARIOS = {
-    "admin": st.secrets.get("ADMIN_PASS", "CaseTox2026*"),
-    "toxicologia": st.secrets.get("TOX_PASS", "LabTox2026*"),
+    "admin": admin_pass,
+    "toxicologia": tox_pass,
 }
 
 def check_login():
