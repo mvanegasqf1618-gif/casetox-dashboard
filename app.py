@@ -12,6 +12,56 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ─── Autenticación ───
+# Usuarios autorizados: usuario -> contraseña
+USUARIOS = {
+    "admin": st.secrets.get("ADMIN_PASS", "CaseTox2026*"),
+    "toxicologia": st.secrets.get("TOX_PASS", "LabTox2026*"),
+}
+
+def check_login():
+    """Pantalla de login"""
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+        st.session_state.username = ""
+
+    if st.session_state.authenticated:
+        return True
+
+    st.markdown(
+        "<div style='text-align: center; margin-top: 50px;'>"
+        "<h1>🧪 CaseTox Manager</h1>"
+        "<h3>Dashboard de Tamizaje — Laboratorio de Toxicología</h3>"
+        "<p style='color: gray;'>Acceso restringido. Ingrese sus credenciales.</p>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    col_left, col_center, col_right = st.columns([1, 1.5, 1])
+    with col_center:
+        st.markdown("---")
+        usuario = st.text_input("👤 Usuario", key="login_user")
+        password = st.text_input("🔒 Contraseña", type="password", key="login_pass")
+
+        if st.button("Iniciar sesión", use_container_width=True, type="primary"):
+            if usuario in USUARIOS and USUARIOS[usuario] == password:
+                st.session_state.authenticated = True
+                st.session_state.username = usuario
+                st.rerun()
+            else:
+                st.error("Usuario o contraseña incorrectos.")
+
+        st.markdown(
+            "<div style='text-align: center; color: gray; font-size: 11px; margin-top: 30px;'>"
+            "INML · Laboratorio de Toxicología · Acceso autorizado únicamente"
+            "</div>",
+            unsafe_allow_html=True
+        )
+    return False
+
+if not check_login():
+    st.stop()
+
 # ─── Cargar datos desde CSV ───
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -25,6 +75,13 @@ def load_data():
 df_tam, df_asig = load_data()
 
 # ─── Sidebar: Filtros ───
+st.sidebar.markdown(f"**Sesión:** {st.session_state.username}")
+if st.sidebar.button("🚪 Cerrar sesión"):
+    st.session_state.authenticated = False
+    st.session_state.username = ""
+    st.rerun()
+
+st.sidebar.markdown("---")
 st.sidebar.title("🔬 Filtros")
 
 # Filtro de perito
@@ -236,7 +293,7 @@ with st.expander("📁 Ver tabla completa de Tamizaje"):
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: gray; font-size: 12px;'>"
-    "CaseTox Manager Dashboard · Laboratorio de Toxicología · INML"
+    "CaseTox Manager Dashboard · Laboratorio de Toxicología · INML · Acceso restringido"
     "</div>",
     unsafe_allow_html=True
 )
